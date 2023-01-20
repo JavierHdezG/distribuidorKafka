@@ -15,6 +15,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.seguros.azteca.distribuidorKafka.service.FiltraTransaccionService;
+
 import io.micrometer.core.instrument.MeterRegistry;
 
 @SpringBootApplication
@@ -23,16 +25,22 @@ public class DistribuidorKafkaApplication {
 	@Autowired
 	private KafkaTemplate<String, String> kafkaTemplate;
 	
+	/*
+	 * @Autowired private MeterRegistry meterRegistry;
+	 */
+	
 	@Autowired
-	private MeterRegistry meterRegistry;
+	private FiltraTransaccionService filtraTransaccionService;
 	
 	private static final Logger log = LoggerFactory.getLogger(DistribuidorKafkaApplication.class);
 
-	@KafkaListener(id= "idSeguros", autoStartup= "false", topics="seguros-topic", containerFactory="listenerContainerFactory", groupId= "seguros-group", properties = {"max.poll.interval.ms:4000", "max.poll.records:50"})
+	@KafkaListener(id= "idSeguros", autoStartup= "true", topics="seguros-topic", containerFactory="listenerContainerFactory", groupId= "seguros-group", properties = {"max.poll.interval.ms:4000", "max.poll.records:50"})
 	public void Listen(List<ConsumerRecord<String, String>> messages) {
 		log.info("Message Received {}", messages.size());
 		for (ConsumerRecord<String, String> message: messages) {
-			log.info("Partition = {}, Offset={}, Key={}, Value={}", message.partition(), message.offset(), message.key(), message.value());
+			// log.info("Partition = {}, Offset={}, Key={}, Value={}", message.partition(), message.offset(), message.key(), message.value());
+			filtraTransaccionService.filtraTransacciones(message.value());
+					
 		}
 		log.info("Batch complete");
 	}
@@ -60,16 +68,18 @@ public class DistribuidorKafkaApplication {
 		}
 		 if(!transaccionesArchivo.isEmpty()) {
 			 for(String transaccion : transaccionesArchivo) { 
-				 Integer counter = transaccionesArchivo.size();
-				 kafkaTemplate.send("seguros-topic",counter.toString(),transaccion); 
+				 Integer counter = transaccionesArchivo.indexOf(transaccion);
+				 kafkaTemplate.send("seguros-topic",counter.toString(),transaccion);
+				 log.info("counter {}", counter);
 			 }
 		 }
 	}
 	
-	@Scheduled(fixedDelay = 2000, initialDelay = 500)
-	public void printMetrics() {
-		double count = meterRegistry.get("kafka.producer.record.send.total").functionCounter().count();
-		log.info("Count {}", count);
-	}
+	/*
+	 * @Scheduled(fixedDelay = 2000, initialDelay = 500) public void printMetrics()
+	 * { double count =
+	 * meterRegistry.get("kafka.producer.record.send.total").functionCounter().count
+	 * (); log.info("Count {}", count); }
+	 */
 	
 }
