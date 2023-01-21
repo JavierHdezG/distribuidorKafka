@@ -36,7 +36,7 @@ public class DistribuidorKafkaApplication {
 
 	@KafkaListener(id= "idSeguros", autoStartup= "true", topics="seguros-topic", containerFactory="listenerContainerFactory", groupId= "seguros-group", properties = {"max.poll.interval.ms:4000", "max.poll.records:50"})
 	public void Listen(List<ConsumerRecord<String, String>> messages) {
-		log.info("Message Received {}", messages.size());
+		// ciclo para escuchar las transacciones en el topico y procesarla.
 		for (ConsumerRecord<String, String> message: messages) {
 			// log.info("Partition = {}, Offset={}, Key={}, Value={}", message.partition(), message.offset(), message.key(), message.value());
 			filtraTransaccionService.filtraTransacciones(message.value());
