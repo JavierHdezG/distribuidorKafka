@@ -61,7 +61,7 @@ public class KafkaConfig {
 		listenerContainerFactory.setConsumerFactory(consumerFactory());
 		listenerContainerFactory.setBatchListener(true);
 		// Uso 3 hilos consumiendo mensajes de manera concurrente.
-		listenerContainerFactory.setConcurrency(3);
+		// listenerContainerFactory.setConcurrency(3);
 		return listenerContainerFactory;
 	}
 	

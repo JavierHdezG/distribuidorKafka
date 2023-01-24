@@ -49,7 +49,7 @@ public class DistribuidorKafkaApplication {
 		SpringApplication.run(DistribuidorKafkaApplication.class, args);
 	}
 
-	@Scheduled(fixedDelay=2000, initialDelay = 500)
+	// @Scheduled(fixedDelay=100000, initialDelay = 100000)
 	public void sendKafkaMessages() {
 		/*
 		 * for(int i= 0; i < 200; i++) { kafkaTemplate.send("seguros-topic",

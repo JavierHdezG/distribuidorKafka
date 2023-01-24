@@ -3,14 +3,20 @@ package com.seguros.azteca.distribuidorKafka.service.impl;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXB;
 
+import org.apache.kafka.common.utils.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.stereotype.Service;
 
+import com.seguros.azteca.distribuidorKafka.model.Detalle;
 import com.seguros.azteca.distribuidorKafka.model.Transaccion;
 import com.seguros.azteca.distribuidorKafka.service.FiltraTransaccionService;
 
@@ -22,23 +28,9 @@ public class FiltraTransaccionServiceImpl implements FiltraTransaccionService {
 	public FiltraTransaccionServiceImpl() {
 		// TODO Auto-generated constructor stub
 	}
-
-	@Override
-	public String filtraTransacciones(String transaccionBusCentral) {
-		try {
-			Transaccion transac = (Transaccion) JAXB.unmarshal(new StringReader(transaccionBusCentral), Transaccion.class);	
-				
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			log.debug("Error {}", e.getMessage());
-		}
-		
-		return null;
-	}
 	
-	public ArrayList<Integer> listRegistrosSeguros(){
-		ArrayList<Integer> lista = new ArrayList<>();
+	public List<Integer> listRegistrosSeguros(){
+		List<Integer> lista = new ArrayList<>();
 			lista.add(1064);
 			lista.add(1065);
 			lista.add(1066);
@@ -158,6 +150,31 @@ public class FiltraTransaccionServiceImpl implements FiltraTransaccionService {
 		   	lista.add(5444);
 		return lista;
 	}
+
+	@Override
+	public String filtraTransacciones(String transaccionBusCentral) {
+		try {
+			Transaccion transac = (Transaccion) JAXB.unmarshal(new StringReader(transaccionBusCentral), Transaccion.class);	
+			List<Detalle> detallesTransac = transac.getDetalle();
+			List<Integer> fitipoReg = new ArrayList<>();
+			for(Detalle detalleTransac : detallesTransac) {
+				fitipoReg.add(detalleTransac.getFITIPOREG());
+			}
+			Set<Integer> validaTransac = this.listRegistrosSeguros().stream().distinct().filter(fitipoReg::contains).collect(Collectors.toSet());
+			log.info("validaTransac {}", validaTransac.toString());
+			if(!validaTransac.isEmpty()) {
+				log.info("Mandar Objeto Transaccion a topico principal");
+				
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.debug("Error {}", e.getMessage());
+		}
+		
+		return null;
+	}
+	
 
 	
 
