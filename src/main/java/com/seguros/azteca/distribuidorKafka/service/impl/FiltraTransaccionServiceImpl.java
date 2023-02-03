@@ -14,16 +14,21 @@ import org.apache.kafka.common.utils.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.seguros.azteca.distribuidorKafka.model.Detalle;
 import com.seguros.azteca.distribuidorKafka.model.Transaccion;
+import com.seguros.azteca.distribuidorKafka.service.DistribuyeRegistrosService;
 import com.seguros.azteca.distribuidorKafka.service.FiltraTransaccionService;
 
 @Service
 public class FiltraTransaccionServiceImpl implements FiltraTransaccionService {
 	
 	private static final Logger log = LoggerFactory.getLogger(FiltraTransaccionServiceImpl.class);
+	
+	@Autowired
+	private DistribuyeRegistrosService distribuyeRegistrosService;
 
 	public FiltraTransaccionServiceImpl() {
 		// TODO Auto-generated constructor stub
@@ -161,10 +166,9 @@ public class FiltraTransaccionServiceImpl implements FiltraTransaccionService {
 				fitipoReg.add(detalleTransac.getFITIPOREG());
 			}
 			Set<Integer> validaTransac = this.listRegistrosSeguros().stream().distinct().filter(fitipoReg::contains).collect(Collectors.toSet());
-			log.info("validaTransac {}", validaTransac.toString());
 			if(!validaTransac.isEmpty()) {
 				log.info("Mandar Objeto Transaccion a topico principal");
-				
+				distribuyeRegistrosService.distribuyeRegOfTransac(transac);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

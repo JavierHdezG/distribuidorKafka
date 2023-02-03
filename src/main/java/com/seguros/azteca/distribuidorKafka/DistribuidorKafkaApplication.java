@@ -40,7 +40,7 @@ public class DistribuidorKafkaApplication {
 		for (ConsumerRecord<String, String> message: messages) {
 			// log.info("Partition = {}, Offset={}, Key={}, Value={}", message.partition(), message.offset(), message.key(), message.value());
 			filtraTransaccionService.filtraTransacciones(message.value());
-					
+			
 		}
 		log.info("Batch complete");
 	}
